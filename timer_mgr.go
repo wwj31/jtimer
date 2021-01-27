@@ -2,7 +2,6 @@ package jtimer
 
 import (
 	"fmt"
-	"./priorityqueue"
 	"runtime/debug"
 	"time"
 )
@@ -21,7 +20,7 @@ var (
 type FuncCallback func(dt int64)
 
 type TimerMgr struct {
-	timers     *priorityqueue.Heap
+	timers     *Heap
 	wheel      *wheel
 	id2timer   map[int64]*Timer
 	cur_timeid int64 // 自增id
@@ -32,7 +31,7 @@ func NewTimerMgr() *TimerMgr {
 	timer_mgr := TimerMgr{}
 	timer_mgr.cur_timeid = 0
 	timer_mgr.id2timer = make(map[int64]*Timer)
-	timer_mgr.timers = priorityqueue.NewQueue(nil, priorityqueue.MIN_HEAP) // 计时器统一用小顶堆
+	timer_mgr.timers = NewQueue(nil, MIN_HEAP) // 计时器统一用小顶堆
 
 	return &timer_mgr
 }
@@ -55,7 +54,7 @@ func (s *TimerMgr) AvailWheel() error {
 
 // 重置 会丢弃所有timer
 func (s *TimerMgr) Reset() {
-	s.timers = priorityqueue.NewQueue(nil, priorityqueue.MIN_HEAP)
+	s.timers = NewQueue(nil, MIN_HEAP)
 	if s.wheel != nil {
 		s.wheel = s.newWheel()
 	}

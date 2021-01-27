@@ -1,4 +1,4 @@
-package priorityqueue
+package jtimer
 
 import (
 	"fmt"
