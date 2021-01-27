@@ -23,7 +23,7 @@ func TestTimerMgr(t *testing.T) {
 			cout++
 			fmt.Printf("dt:%v  count:%v \n", dt, cout)
 		},
-	})
+	},false)
 	for {
 		select {
 		case <-timer.C:
