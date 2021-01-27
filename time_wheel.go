@@ -69,7 +69,7 @@ func (s *wheel) update() {
 
 	for _, time := range times {
 		if !time.disabled {
-			try(func() {time.func_callback(s.interval)})
+			try(func() {time.func_callback(time.interval)})
 
 			if time.trigger_times > 0 {
 				time.trigger_times--
