@@ -5,24 +5,33 @@
 ```golang
 package main
 
+import (
+	"fmt"
+	"github.com/Archer-26/jtimer"
+	"time"
+)
+
 func main() {
-    ticker := time.NewTicker(time.Millisecond * 100)
-    timerMgr := NewTimerMgr()
-    
-    timerMgr.AddTimer(&Timer{
-    interval:         1000,
-    next_triggertime: time.Now().UnixNano()/int64(time.Millisecond) + 1000,
-    trigger_times:    10,
-    func_callback: func(dt int64) {
-        cout++
-        fmt.Printf("dt:%v  count:%v \n", dt, cout)
-        },
-    })
-    for {
-        select {
-        case <-ticker.C:
-            timerMgr.Update(time.Now().UnixNano())
-        }   
-    }
+	ticker := time.NewTicker(time.Millisecond * 100)
+	timerMgr := jtimer.NewTimerMgr()
+
+	//timerMgr.AvailWheel() 开启时间轮
+
+	c := 0
+	now := time.Now().UnixNano()
+	timer,err := jtimer.NewTimer(now,now + int64(2*time.Second),-1, func(dt int64) {
+		c++
+		fmt.Printf("dt:%v  count:%v \n", dt, c)
+	})
+	if err != nil {
+		return
+	}
+	timerMgr.AddTimer(timer,false)
+	for {
+		select {
+		case <-ticker.C:
+			timerMgr.Update(time.Now().UnixNano())
+		}
+	}
 }
 ```
