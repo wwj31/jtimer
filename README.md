@@ -1,8 +1,10 @@
 ## 简介
-一个高效的、无依赖的、无内部协程的、计时器系统，在需要的协程自行调度。
-默认用时间堆，有大量短时计时器需求，可以开启时间轮。
+一个高效的、无依赖的、无内部协程的、计时器系统，自行调度更新。  
+默认用时间堆，有大量短时计时器需求，可以开启时间轮。  
 ## Quick Start
 ```golang
+package main
+
 func main() {
     ticker := time.NewTicker(time.Millisecond * 100)
     timerMgr := NewTimerMgr()

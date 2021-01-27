@@ -1,9 +1,9 @@
-package abtime
+package jtimer
 
 import (
-	"root/pkg/container/priorityqueue"
-	"root/pkg/log"
-	"root/pkg/tools"
+	"fmt"
+	"./priorityqueue"
+	"runtime/debug"
 	"time"
 )
 
@@ -40,17 +40,17 @@ func NewTimerMgr() *TimerMgr {
 func (s *TimerMgr) newWheel() *wheel {
 	return newWheel(int(wheel_dayTime/wheel_interval), int64(wheel_interval))
 }
-func (s *TimerMgr) AvailWheel() {
+func (s *TimerMgr) AvailWheel() error {
 	s.wheel = s.newWheel()
-	now := Now().UnixNano()
+	now := time.Now().UnixNano()
 	wheel_timer, err := NewTimer(now, now+int64(wheel_interval), -1, func(dt int64) {
 		s.wheel.update()
 	})
 	if err != nil {
-		log.KV("err", err).Warn("wheel NewTimer error")
-		return
+		return err
 	}
 	s.AddTimer(wheel_timer, true)
+	return nil
 }
 
 // 重置 会丢弃所有timer
@@ -85,6 +85,15 @@ func (s *TimerMgr) CancelTimer(timeid int64) {
 	}
 }
 
+func try(fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("[%v] panic recover %v", r, string(debug.Stack()))
+		}
+	}()
+	fn()
+}
+
 func (s *TimerMgr) Update(now int64) {
 	for {
 		intf := s.timers.Peek()
@@ -105,13 +114,16 @@ func (s *TimerMgr) Update(now int64) {
 				if timer.trigger_times == 0 {
 					break
 				}
-				if timer.trigger_times == 1 {
-					// 最后一次，间隔+delay
-					tools.Try(func() { timer.func_callback(timer.interval + delayTime) }, nil)
-				} else {
-					// 不是最后一次，按照固定间隔执行
-					tools.Try(func() { timer.func_callback(timer.interval) }, nil)
-				}
+				try(func() {
+					if timer.trigger_times == 1 {
+						// 最后一次，间隔+delay
+						timer.func_callback(timer.interval + delayTime)
+					} else {
+						// 不是最后一次，按照固定间隔执行
+						timer.func_callback(timer.interval)
+					}
+				})
+
 
 				if timer.trigger_times > 0 {
 					timer.trigger_times--

@@ -1,4 +1,4 @@
-package abtime
+package jtimer
 
 import (
 	"fmt"

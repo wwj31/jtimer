@@ -1,8 +1,8 @@
-package abtime
+package jtimer
 
 import (
-	"root/pkg/log"
-	"root/pkg/tools"
+	"fmt"
+	"time"
 )
 
 /*
@@ -25,7 +25,7 @@ func newWheel(size int, inter int64) *wheel {
 		index:    0,
 		interval: inter,
 		slots:    make([]slotInfo, size, size),
-		lasttime: Now().UnixNano(),
+		lasttime: time.Now().UnixNano(),
 	}
 	return w
 }
@@ -35,10 +35,9 @@ func (s *wheel) limit() int64 {
 	return s.interval * int64(len(s.slots)-1)
 }
 
-func (s *wheel) addTime(timer *Timer) {
+func (s *wheel) addTime(timer *Timer) error{
 	if timer.interval >= s.limit() {
-		log.KVs(log.Fields{"interval": timer.interval, "limit": s.limit()}).ErrorStack(3, "timer interval out of the range")
-		return
+		return fmt.Errorf("timer interval out of the range")
 	}
 
 	diff := timer.next_triggertime - s.lasttime
@@ -51,6 +50,7 @@ func (s *wheel) addTime(timer *Timer) {
 		s.slots[fitPos] = make(slotInfo, 0)
 	}
 	s.slots[fitPos] = append(s.slots[fitPos], timer)
+	return nil
 }
 
 func (s *wheel) update() {
@@ -69,7 +69,7 @@ func (s *wheel) update() {
 
 	for _, time := range times {
 		if !time.disabled {
-			tools.Try(func() {
+			try(func() {
 				time.func_callback(s.interval)
 			}, nil)
 
