@@ -3,84 +3,46 @@ package jtimer
 import (
 	"fmt"
 	"runtime/debug"
-	"time"
 )
 
-var (
-	/*
-		为了保证时间轮简单，暂时固定参数设置：
-			轮动间隔:100ms
-			计时范围:1天
-			所需槽数:864000=DAY_MS/ROTATE_INTERVAL
-	*/
-	wheel_dayTime  = 24 * time.Hour         // 转动间隔时间(毫秒)
-	wheel_interval = 100 * time.Millisecond // 一天(毫秒)
-)
 
 type FuncCallback func(dt int64)
 
 type TimerMgr struct {
 	timers     *Heap
-	wheel      *wheel
 	id2timer   map[int64]*Timer
 	cur_timeid int64 // 自增id
 }
 
-// 创建一个timer管理器
 func NewTimerMgr() *TimerMgr {
 	timer_mgr := TimerMgr{}
 	timer_mgr.cur_timeid = 0
 	timer_mgr.id2timer = make(map[int64]*Timer)
-	timer_mgr.timers = NewQueue(nil, MIN_HEAP) // 计时器统一用小顶堆
+	timer_mgr.timers = NewQueue(nil, MIN_HEAP, QUAD) // 计时器统一用小顶堆
 
 	return &timer_mgr
 }
 
-func (s *TimerMgr) newWheel() *wheel {
-	return newWheel(int(wheel_dayTime/wheel_interval), int64(wheel_interval))
-}
-func (s *TimerMgr) AvailWheel() error {
-	s.wheel = s.newWheel()
-	now := time.Now().UnixNano()
-	wheel_timer, err := NewTimer(now, now+int64(wheel_interval), -1, func(dt int64) {
-		s.wheel.update()
-	})
-	if err != nil {
-		return err
-	}
-	s.AddTimer(wheel_timer, true)
-	return nil
-}
-
-// 重置 会丢弃所有timer
 func (s *TimerMgr) Reset() {
-	s.timers = NewQueue(nil, MIN_HEAP)
-	if s.wheel != nil {
-		s.wheel = s.newWheel()
-	}
+	s.timers = NewQueue(nil, MIN_HEAP, QUAD)
 	s.id2timer = make(map[int64]*Timer)
 	s.cur_timeid = 0
 }
 
-// 增加一个timer
+// AddTimer
 func (s *TimerMgr) AddTimer(timer *Timer, forceHeap bool) int64 {
 	s.cur_timeid += 1
 	timer.timeid = s.cur_timeid
 
-	// 时间范围小于时间轮计时范围，优先丢给时间轮处理，否则丢给时间堆处理
-	if s.wheel != nil && timer.interval < s.wheel.limit() && !forceHeap {
-		s.wheel.addTime(timer)
-	} else {
-		s.timers.Push(timer)
-	}
+	s.timers.Push(timer)
 	s.id2timer[timer.timeid] = timer
 	return timer.timeid
 }
 
-// 注销一个timer
+// CancelTimer
 func (s *TimerMgr) CancelTimer(timeid int64) {
 	if timer, ok := s.id2timer[timeid]; ok {
-		timer.disabled = true // 到期判断有效性
+		timer.disabled = true
 	}
 }
 
