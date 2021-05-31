@@ -7,15 +7,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/Archer-26/jtimer"
 	"time"
+
+	"github.com/wwj31/jtimer"
 )
 
 func main() {
 	ticker := time.NewTicker(time.Millisecond * 100)
 	timerMgr := jtimer.NewTimerMgr()
-
-	//timerMgr.AvailWheel() 开启时间轮
 
 	c := 0
 	now := time.Now().UnixNano()
