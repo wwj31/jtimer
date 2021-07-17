@@ -25,7 +25,7 @@ const (
 func NewQueue(a []IPriorityInterface, t HEAPTYPE, c int) *Heap {
 	h := &Heap{arr: a, t: t, c: c}
 	if h.arr == nil {
-		h.arr = make([]IPriorityInterface, 0, 5000000)
+		h.arr = make([]IPriorityInterface, 0, 10)
 	} else {
 		h.heapify()
 	}
