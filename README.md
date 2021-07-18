@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	timerMgr.AddTimer(timer,false)
+	timerMgr.AddTimer(timer)
 	for {
 		select {
 		case <-ticker.C:
