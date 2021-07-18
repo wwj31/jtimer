@@ -76,11 +76,11 @@ func init() {
 }
 
 func BenchmarkHeap2(b *testing.B) {
-	heap2 := NewQueue(nil, MIN_HEAP, BINARY)
+	heap := NewQueue(nil, MIN_HEAP, BINARY)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, v := range arr {
-			heap2.Push(&array{val: 4, score: v})
+			heap.Push(&array{val: 4, score: v})
 		}
 		//for heap2.Size() > 0 {
 		//	heap2.Pop()
@@ -89,11 +89,23 @@ func BenchmarkHeap2(b *testing.B) {
 }
 
 func BenchmarkHeap4(b *testing.B) {
-	heap2 := NewQueue(nil, MIN_HEAP, QUAD)
+	heap := NewQueue(nil, MIN_HEAP, QUAD)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, v := range arr {
-			heap2.Push(&array{val: 4, score: v})
+			heap.Push(&array{val: 4, score: v})
+		}
+		//for heap2.Size() > 0 {
+		//	heap2.Pop()
+		//}
+	}
+}
+func BenchmarkHeap8(b *testing.B) {
+	heap := NewQueue(nil, MIN_HEAP, OCT)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, v := range arr {
+			heap.Push(&array{val: 4, score: v})
 		}
 		//for heap2.Size() > 0 {
 		//	heap2.Pop()

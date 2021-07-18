@@ -5,9 +5,6 @@ import (
 	"runtime/debug"
 )
 
-
-type FuncCallback func(dt int64)
-
 type TimerMgr struct {
 	timers     *Heap
 	id2timer   map[int64]*Timer
@@ -30,7 +27,7 @@ func (s *TimerMgr) Reset() {
 }
 
 // AddTimer
-func (s *TimerMgr) AddTimer(timer *Timer, forceHeap bool) int64 {
+func (s *TimerMgr) AddTimer(timer *Timer) int64 {
 	s.cur_timeid += 1
 	timer.timeid = s.cur_timeid
 
@@ -62,8 +59,8 @@ func (s *TimerMgr) Update(now int64) {
 			break
 		}
 		timer := intf.(*Timer)
-
-		if !timer.disabled && timer.interval > 0{
+		del := timer.disabled
+		if !del && timer.interval > 0 {
 			// 检查执行时间是否到了
 			delayTime := now - timer.next_triggertime
 			if delayTime < 0 {
@@ -85,18 +82,22 @@ func (s *TimerMgr) Update(now int64) {
 					}
 				})
 
-
 				if timer.trigger_times > 0 {
 					timer.trigger_times--
 				}
 			}
 
 			// 还有次数,继续加入优先队列
-			if timer.trigger_times != 0 && !timer.disabled{
+			if timer.trigger_times != 0 && !timer.disabled {
 				timer.next_triggertime += timer.interval * overtimes
-				s.timers.Push(timer)
+				s.timers.Topdown()
+			} else {
+				del = true
 			}
 		}
-		s.timers.Pop()
+		if del {
+			s.timers.Pop()
+			delete(s.id2timer, timer.timeid)
+		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+type FuncCallback func(dt int64)
 type Timer struct {
 	timeid           int64        // 计时器id
 	interval         int64        // 时间间隔
@@ -22,10 +23,9 @@ func NewTimer(now, next_triggertime int64, trigger_times int32, callback FuncCal
 	if trigger_times == 0 {
 		return nil, errors.New("trigger_times == 0")
 	}
-	if next_triggertime < now {
-		next_triggertime = now
+	if next_triggertime <= now {
+		next_triggertime = now + 1
 	}
-
 	return &Timer{
 		interval:         next_triggertime - now,
 		next_triggertime: next_triggertime,
