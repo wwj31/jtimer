@@ -2,19 +2,20 @@ package jtimer
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"runtime/debug"
 )
 
 type TimerMgr struct {
 	timers     *Heap
-	id2timer   map[int64]*Timer
+	id2timer   map[string]*Timer
 	cur_timeid int64 // 自增id
 }
 
 func NewTimerMgr() *TimerMgr {
 	timer_mgr := TimerMgr{}
 	timer_mgr.cur_timeid = 0
-	timer_mgr.id2timer = make(map[int64]*Timer)
+	timer_mgr.id2timer = make(map[string]*Timer)
 	timer_mgr.timers = NewQueue(nil, MIN_HEAP, QUAD) // 计时器统一用小顶堆
 
 	return &timer_mgr
@@ -22,14 +23,16 @@ func NewTimerMgr() *TimerMgr {
 
 func (s *TimerMgr) Reset() {
 	s.timers = NewQueue(nil, MIN_HEAP, QUAD)
-	s.id2timer = make(map[int64]*Timer)
+	s.id2timer = make(map[string]*Timer)
 	s.cur_timeid = 0
 }
 
 // AddTimer
-func (s *TimerMgr) AddTimer(timer *Timer) int64 {
+func (s *TimerMgr) AddTimer(timer *Timer) string {
 	s.cur_timeid += 1
-	timer.timeid = s.cur_timeid
+	if timer.timeid == "" {
+		timer.timeid = uuid.NewV4().String()
+	}
 
 	s.timers.Push(timer)
 	s.id2timer[timer.timeid] = timer
@@ -37,7 +40,7 @@ func (s *TimerMgr) AddTimer(timer *Timer) int64 {
 }
 
 // CancelTimer
-func (s *TimerMgr) CancelTimer(timeid int64) {
+func (s *TimerMgr) CancelTimer(timeid string) {
 	if timer, ok := s.id2timer[timeid]; ok {
 		timer.disabled = true
 	}
