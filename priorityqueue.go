@@ -13,6 +13,8 @@ const (
 type (
 	IPriorityInterface interface {
 		Priority() int64
+		SetIndex(i int)
+		GetIndex() int
 	}
 	Heap struct {
 		arr []IPriorityInterface
@@ -38,8 +40,28 @@ func NewQueue(a []IPriorityInterface, htype, atype int) *Heap {
 // 尾部插入一个元素
 func (s *Heap) Push(val IPriorityInterface) {
 	s.arr = append(s.arr, val)
+	val.SetIndex(len(s.arr) - 1)
+
 	heaptype, arytype := s.htype()
 	_up(s.arr, len(s.arr), heaptype, arytype)
+}
+
+// 更新
+func (s *Heap) Update(newVal IPriorityInterface) error {
+	idx := newVal.GetIndex()
+	if 0 > idx || idx >= len(s.arr) {
+		return ErrorUpdateHeap
+	}
+
+	oldVal := s.arr[idx]
+	if oldVal.Priority() == newVal.Priority() {
+		return nil
+	}
+	s.arr[idx] = newVal
+	heaptype, arytype := s.htype()
+	_down(s.arr, idx+1, heaptype, arytype)
+	_up(s.arr, idx+1, heaptype, arytype)
+	return nil
 }
 
 // 重新维护堆顶，修改了堆顶元素后，需调用此函数
@@ -117,7 +139,7 @@ func (s *Heap) stype(h int, a int) {
 }
 
 // 获取堆顶类型，子节点数量
-func (s *Heap) htype() (int, int) {
+func (s *Heap) htype() (t int, c int) {
 	return s.opt >> 4, s.opt & 0xF
 }
 
@@ -165,6 +187,10 @@ func _down(arr []IPriorityInterface, n int, t int, c int) {
 		if t == MIN_HEAP && arr[n-1].Priority() > arr[_mum].Priority() ||
 			t == MAX_HEAP && arr[n-1].Priority() < arr[_mum].Priority() {
 			arr[n-1], arr[_mum] = arr[_mum], arr[n-1]
+
+			arr[n-1].SetIndex(n - 1)
+			arr[_mum].SetIndex(_mum)
+
 			n = _mum + 1
 			l, r = _lr(n, c)
 		} else {
@@ -191,6 +217,10 @@ func _up(arr []IPriorityInterface, n int, t int, c int) {
 		if (t == MIN_HEAP && arr[p].Priority() > arr[n-1].Priority()) ||
 			(t == MAX_HEAP && arr[p].Priority() < arr[n-1].Priority()) {
 			arr[p], arr[n-1] = arr[n-1], arr[p]
+
+			arr[p].SetIndex(p)
+			arr[n-1].SetIndex(n - 1)
+
 			n = p + 1
 		} else {
 			return

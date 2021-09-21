@@ -7,14 +7,12 @@ import (
 )
 
 type TimerMgr struct {
-	timers     *Heap
-	id2timer   map[string]*Timer
-	cur_timeid int64 // 自增id
+	timers   *Heap
+	id2timer map[string]*Timer
 }
 
 func NewTimerMgr() *TimerMgr {
 	timer_mgr := TimerMgr{}
-	timer_mgr.cur_timeid = 0
 	timer_mgr.id2timer = make(map[string]*Timer)
 	timer_mgr.timers = NewQueue(nil, MIN_HEAP, QUAD) // 计时器统一用小顶堆
 
@@ -24,12 +22,10 @@ func NewTimerMgr() *TimerMgr {
 func (s *TimerMgr) Reset() {
 	s.timers = NewQueue(nil, MIN_HEAP, QUAD)
 	s.id2timer = make(map[string]*Timer)
-	s.cur_timeid = 0
 }
 
 // AddTimer
 func (s *TimerMgr) AddTimer(timer *Timer) string {
-	s.cur_timeid += 1
 	if timer.timeid == "" {
 		timer.timeid = uuid.NewV4().String()
 	}
@@ -37,6 +33,16 @@ func (s *TimerMgr) AddTimer(timer *Timer) string {
 	s.timers.Push(timer)
 	s.id2timer[timer.timeid] = timer
 	return timer.timeid
+}
+
+func (s *TimerMgr) UpdateTimer(key string, endAt int64) error {
+	oldTimer, ok := s.id2timer[key]
+	if !ok {
+		return ErrorUpdateTimer
+	}
+	newTimer, _ := NewTimer(oldTimer.startAt, endAt, oldTimer.count, oldTimer.cb, oldTimer.timeid)
+	newTimer.heapIdx = oldTimer.heapIdx
+	return s.timers.Update(newTimer)
 }
 
 // CancelTimer
@@ -65,34 +71,34 @@ func (s *TimerMgr) Update(now int64) {
 		del := timer.disabled
 		if !del && timer.interval > 0 {
 			// 检查执行时间是否到了
-			delayTime := now - timer.next_triggertime
+			delayTime := now - timer.endAt
 			if delayTime < 0 {
 				break
 			}
-			//fmt.Printf("now:%v  - abtime.next_triggertime:%v = delayTime:%v\n", now, abtime.next_triggertime, delayTime)
+			//fmt.Printf("now:%v  - abtime.endAt:%v = delayTime:%v\n", now, abtime.endAt, delayTime)
 			overtimes := (delayTime + timer.interval) / timer.interval
 			for i := 0; i < int(overtimes); i++ {
-				if timer.trigger_times == 0 {
+				if timer.count == 0 {
 					break
 				}
 				try(func() {
-					if timer.trigger_times == 1 {
+					if timer.count == 1 {
 						// 最后一次，间隔+delay
-						timer.func_callback(timer.interval + delayTime)
+						timer.cb(timer.interval + delayTime)
 					} else {
 						// 不是最后一次，按照固定间隔执行
-						timer.func_callback(timer.interval)
+						timer.cb(timer.interval)
 					}
 				})
 
-				if timer.trigger_times > 0 {
-					timer.trigger_times--
+				if timer.count > 0 {
+					timer.count--
 				}
 			}
 
 			// 还有次数,继续加入优先队列
-			if timer.trigger_times != 0 && !timer.disabled {
-				timer.next_triggertime += timer.interval * overtimes
+			if timer.count != 0 && !timer.disabled {
+				timer.endAt += timer.interval * overtimes
 				s.timers.Topdown()
 			} else {
 				del = true

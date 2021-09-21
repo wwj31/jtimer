@@ -9,10 +9,17 @@ import (
 type array struct {
 	val   int
 	score int64
+	idx   int
 }
 
 func (s *array) Priority() int64 {
 	return s.score
+}
+func (s *array) SetIndex(i int) {
+	s.idx = i
+}
+func (s *array) GetIndex() int {
+	return s.idx
 }
 
 func TestPropertyqueue(t *testing.T) {
@@ -42,6 +49,10 @@ func TestPropertyqueue(t *testing.T) {
 	fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
 	heap.Pop()
 	fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
+
+	arr := &array{val: 4, score: 1, idx: 1}
+	heap.Update(arr)
+	fmt.Printf("Update:%v\n", heap.Peek().Priority())
 	//heap.Pop()
 	//fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
 	//heap.Pop()
