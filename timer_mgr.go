@@ -45,11 +45,20 @@ func (s *TimerMgr) UpdateTimer(key string, endAt int64) error {
 	return s.timers.Update(newTimer)
 }
 
-// CancelTimer
-func (s *TimerMgr) CancelTimer(timeid string) {
-	if timer, ok := s.id2timer[timeid]; ok {
-		timer.disabled = true
+// CancelTimer  if del == true, the complexity is O(log n) else is O(1)
+func (s *TimerMgr) CancelTimer(timeid string, del ...bool) {
+	timer, ok := s.id2timer[timeid]
+	if !ok {
+		return
 	}
+
+	if len(del) == 0 || !del[0] {
+		timer.disabled = true
+		return
+	}
+
+	s.timers.Delete(timer)
+	delete(s.id2timer, timeid)
 }
 
 func try(fn func()) {

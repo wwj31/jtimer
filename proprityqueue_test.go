@@ -50,32 +50,45 @@ func TestPropertyqueue(t *testing.T) {
 	heap.Pop()
 	fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
 
-	arr := &array{val: 4, score: 1, idx: 1}
-	heap.Update(arr)
-	fmt.Printf("Update:%v\n", heap.Peek().Priority())
 	//heap.Pop()
 	//fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
 	//heap.Pop()
 	//fmt.Printf("pop最低分:%v\n", heap.Peek().Priority())
 
-	heap.Change(MAX_HEAP) // 改变成大顶堆
-	fmt.Printf("change最高分:%v\n", heap.Peek().Priority())
+	//heap.Change(MAX_HEAP) // 改变成大顶堆
+	//fmt.Printf("change最高分:%v\n", heap.Peek().Priority())
 
 	for _, v := range heap.All() {
 		fmt.Printf("[val:%v score:%v] ", v.(*array).val, v.(*array).score)
 	}
 	fmt.Printf("\n")
 
-	// 用大顶堆排序是顺序
-	for _, v := range heap.Sort() {
+	arr := &array{val: 4, score: 500, idx: 2}
+	heap.Update(arr)
+	fmt.Printf("Update:%v\n", heap.Peek().Priority())
+
+	for _, v := range heap.All() {
 		fmt.Printf("[val:%v score:%v] ", v.(*array).val, v.(*array).score)
 	}
 	fmt.Printf("\n")
-	heap.Change(MIN_HEAP)
-	for _, v := range heap.Sort() {
+
+	arr = &array{idx: 1}
+	heap.Delete(arr)
+	for _, v := range heap.All() {
 		fmt.Printf("[val:%v score:%v] ", v.(*array).val, v.(*array).score)
 	}
 	fmt.Printf("\n")
+	//
+	//// 用大顶堆排序是顺序
+	//for _, v := range heap.Sort() {
+	//	fmt.Printf("[val:%v score:%v] ", v.(*array).val, v.(*array).score)
+	//}
+	//fmt.Printf("\n")
+	//heap.Change(MIN_HEAP)
+	//for _, v := range heap.Sort() {
+	//	fmt.Printf("[val:%v score:%v] ", v.(*array).val, v.(*array).score)
+	//}
+	//fmt.Printf("\n")
 }
 
 var arr = make([]int64, 0, 300000)

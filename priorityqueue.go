@@ -64,6 +64,20 @@ func (s *Heap) Update(newVal IPriorityInterface) error {
 	return nil
 }
 
+// 删除
+func (s *Heap) Delete(val IPriorityInterface) {
+	idx := val.GetIndex()
+	if 0 > idx || idx >= len(s.arr) {
+		return
+	}
+	tail := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+
+	tail.SetIndex(val.GetIndex())
+	_ = s.Update(tail)
+	return
+}
+
 // 重新维护堆顶，修改了堆顶元素后，需调用此函数
 func (s *Heap) Topdown() {
 	n := len(s.arr)
