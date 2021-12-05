@@ -11,12 +11,12 @@ type TimerMgr struct {
 	id2timer map[string]*Timer
 }
 
-func NewTimerMgr() *TimerMgr {
+func NewTimerMgr() TimerMgr {
 	timer_mgr := TimerMgr{}
 	timer_mgr.id2timer = make(map[string]*Timer)
 	timer_mgr.timers = NewQueue(nil, MIN_HEAP, QUAD) // 计时器统一用小顶堆
 
-	return &timer_mgr
+	return timer_mgr
 }
 
 func (s *TimerMgr) Reset() {
