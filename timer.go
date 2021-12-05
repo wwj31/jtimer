@@ -2,7 +2,10 @@ package jtimer
 
 import (
 	"errors"
+	"sync"
 )
+
+var timerPool = sync.Pool{New: func() interface{} { return &Timer{} }}
 
 type callback func(dt int64)
 type Timer struct {
@@ -32,15 +35,15 @@ func NewTimer(now, endAt int64, count int32, callback callback, timeId ...string
 	if len(timeId) > 0 {
 		id = timeId[0]
 	}
-	return &Timer{
-		timeid:   id,
-		startAt:  now,
-		interval: endAt - now,
-		endAt:    endAt,
-		count:    count,
-		cb:       callback,
-		disabled: false,
-	}, nil
+	timer := timerPool.Get().(*Timer)
+	timer.timeid = id
+	timer.startAt = now
+	timer.interval = endAt - now
+	timer.endAt = endAt
+	timer.count = count
+	timer.cb = callback
+	timer.disabled = false
+	return timer, nil
 }
 
 func (s *Timer) Priority() int64 {

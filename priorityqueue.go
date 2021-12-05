@@ -22,8 +22,8 @@ type (
 	}
 )
 
-func NewQueue(a []IPriorityInterface, htype, atype int) *Heap {
-	h := &Heap{arr: a}
+func NewQueue(a []IPriorityInterface, htype, atype int) Heap {
+	h := Heap{arr: a}
 	if atype == 0 {
 		atype = BINARY
 	}

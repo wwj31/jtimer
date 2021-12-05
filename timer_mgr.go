@@ -7,7 +7,7 @@ import (
 )
 
 type TimerMgr struct {
-	timers   *Heap
+	timers   Heap
 	id2timer map[string]*Timer
 }
 
@@ -72,19 +72,18 @@ func try(fn func()) {
 
 func (s *TimerMgr) Update(now int64) {
 	for {
-		intf := s.timers.Peek()
-		if intf == nil {
+		head := s.timers.Peek()
+		if head == nil {
 			break
 		}
-		timer := intf.(*Timer)
+		timer := head.(*Timer)
 		del := timer.disabled
 		if !del && timer.interval > 0 {
-			// 检查执行时间是否到了
 			delayTime := now - timer.endAt
 			if delayTime < 0 {
 				break
 			}
-			//fmt.Printf("now:%v  - abtime.endAt:%v = delayTime:%v\n", now, abtime.endAt, delayTime)
+
 			overtimes := (delayTime + timer.interval) / timer.interval
 			for i := 0; i < int(overtimes); i++ {
 				if timer.count == 0 {
@@ -116,6 +115,7 @@ func (s *TimerMgr) Update(now int64) {
 		if del {
 			s.timers.Pop()
 			delete(s.id2timer, timer.timeid)
+			timerPool.Put(timer)
 		}
 	}
 }
