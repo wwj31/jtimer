@@ -24,6 +24,10 @@ func (s *TimerMgr) Reset() {
 	s.id2timer = make(map[string]*Timer)
 }
 
+func (s *TimerMgr) Empty() bool {
+	return len(s.id2timer) == 0
+}
+
 // AddTimer
 func (s *TimerMgr) AddTimer(timer *Timer) string {
 	if timer.timeid == "" {
