@@ -28,8 +28,16 @@ func (s *TimerMgr) Empty() bool {
 	return len(s.id2timer) == 0
 }
 
+func (s *TimerMgr) NextAt() (time int64) {
+	head := s.timers.Peek()
+	if head != nil {
+		time = head.(*Timer).endAt
+	}
+	return
+}
+
 // AddTimer
-func (s *TimerMgr) AddTimer(timer *Timer) string {
+func (s *TimerMgr) AddTimer(timer *Timer) (timerId string) {
 	if timer.timeid == "" {
 		timer.timeid = uuid.NewV4().String()
 	}
