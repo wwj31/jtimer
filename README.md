@@ -1,5 +1,5 @@
 ## 简介
-a timer implementation in proprity queue,like event-loop and without gorountine.
+a timer implementation in proprity queue,like event-loop and without extra gorountine.
 
 ## Quick Start
 ```golang
