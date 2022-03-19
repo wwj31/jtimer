@@ -1,5 +1,5 @@
 ## 简介
-基于堆的计时器系统  
+a timer implementation in proprity queue,like event-loop and without extra gorountine.
 
 ## Quick Start
 ```golang
