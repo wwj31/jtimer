@@ -5,11 +5,11 @@ import (
 	"sync"
 )
 
-var timerPool = sync.Pool{New: func() interface{} { return &Timer{} }}
+var timerPool = sync.Pool{New: func() interface{} { return new(Timer) }}
 
 type callback func(dt int64)
 type Timer struct {
-	timeid   string   // 计时器id
+	timeId   string   // 计时器id
 	startAt  int64    // 开启时间
 	interval int64    // 时间间隔
 	endAt    int64    // 结束时间
@@ -36,7 +36,8 @@ func NewTimer(now, endAt int64, count int32, callback callback, timeId ...string
 		id = timeId[0]
 	}
 	timer := timerPool.Get().(*Timer)
-	timer.timeid = id
+	timer.Rest()
+	timer.timeId = id
 	timer.startAt = now
 	timer.interval = endAt - now
 	timer.endAt = endAt
@@ -56,4 +57,15 @@ func (s *Timer) SetIndex(i int) {
 
 func (s *Timer) GetIndex() int {
 	return s.heapIdx
+}
+
+func (s *Timer) Rest() {
+	s.timeId = ""
+	s.startAt = 0
+	s.interval = 0
+	s.endAt = 0
+	s.count = 0
+	s.cb = nil
+	s.disabled = false
+	s.heapIdx = 0
 }
