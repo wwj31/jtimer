@@ -19,11 +19,12 @@ type Timer struct {
 	heapIdx  int      // 堆索引
 }
 
-//创建一个timer
+//NewTimer 创建一个timer
 //now:    	创建的时刻
 //endAt:  	触发时刻
 //count:  	触发次数 -1 表示无限次,如果trigger_times==0 返回error
 //callback: 回调函数
+//timeId:   计时器对象ID
 func NewTimer(now, endAt int64, count int32, callback callback, timeId ...string) (*Timer, error) {
 	if count == 0 {
 		return nil, errors.New("count == 0")

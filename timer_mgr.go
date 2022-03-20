@@ -36,9 +36,10 @@ func (s *TimerMgr) NextAt() (time int64) {
 	return
 }
 
-func (s *TimerMgr) AddTimer(timer *Timer) (timerId string) {
+// AddTimer add a timer,return "" if timeId repeated,otherwise return timeId
+func (s *TimerMgr) AddTimer(timer *Timer) (timerId string, err error) {
 	if _, exist := s.id2Timer[timer.timeId]; exist {
-		return ""
+		return "", ErrorAddTimer
 	}
 
 	if timer.timeId == "" {
@@ -47,7 +48,7 @@ func (s *TimerMgr) AddTimer(timer *Timer) (timerId string) {
 
 	s.timers.Push(timer)
 	s.id2Timer[timer.timeId] = timer
-	return timer.timeId
+	return timer.timeId, nil
 }
 
 func (s *TimerMgr) UpdateTimer(key string, endAt int64) error {
@@ -77,15 +78,7 @@ func (s *TimerMgr) CancelTimer(timeid string, del ...bool) {
 	timerPool.Put(timer)
 }
 
-func try(fn func()) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("[%v] panic recover %v", r, string(debug.Stack()))
-		}
-	}()
-	fn()
-}
-
+// Update execute an update round
 func (s *TimerMgr) Update(now int64) {
 	for {
 		head := s.timers.Peek()
@@ -107,10 +100,9 @@ func (s *TimerMgr) Update(now int64) {
 				}
 				try(func() {
 					if timer.count == 1 {
-						// 最后一次，间隔+delay
+						// latest delay
 						timer.cb(timer.interval + delayTime)
 					} else {
-						// 不是最后一次，按照固定间隔执行
 						timer.cb(timer.interval)
 					}
 				})
@@ -120,7 +112,6 @@ func (s *TimerMgr) Update(now int64) {
 				}
 			}
 
-			// 还有次数,继续加入优先队列
 			if timer.count != 0 && !timer.disabled {
 				timer.endAt += timer.interval * overtimes
 				s.timers.Topdown()
@@ -134,4 +125,13 @@ func (s *TimerMgr) Update(now int64) {
 			timerPool.Put(timer)
 		}
 	}
+}
+
+func try(fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("[%v] panic recover %v", r, string(debug.Stack()))
+		}
+	}()
+	fn()
 }
