@@ -1,4 +1,4 @@
-package timer
+package jtimer
 
 import (
 	"fmt"
