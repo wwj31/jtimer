@@ -67,6 +67,10 @@ func (m *Manager) Remove(id Id, softRemove ...bool) {
 	m.remove(id, softrm)
 }
 
+func (m *Manager) Len() int {
+	return len(m.heap)
+}
+
 func (m *Manager) NextUpdateAt() (at time.Time) {
 	headTimer := m.heap.peek()
 	if headTimer == nil {
