@@ -24,7 +24,7 @@ func New() *Manager {
 	}
 }
 
-func (m *Manager) Add(endAt time.Time, callback CallbackFn, execCount int, id ...Id) Id {
+func (m *Manager) Add(now, endAt time.Time, callback CallbackFn, execCount int, id ...Id) Id {
 	var timerId Id
 	if len(id) > 0 {
 		timerId = id[0]
@@ -32,7 +32,6 @@ func (m *Manager) Add(endAt time.Time, callback CallbackFn, execCount int, id ..
 		timerId = xid.New().String()
 	}
 
-	now := time.Now()
 	if endAt.Before(now) {
 		endAt = now
 	}
