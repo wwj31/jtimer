@@ -103,7 +103,7 @@ func (m *Manager) Update(now time.Time) {
 				headTimer.callback(triggerTime)
 			}
 			headTimer.consumeCount(int(triggerCount))
-			headTimer.startAt.Add(triggerTime)
+			headTimer.startAt = headTimer.startAt.Add(triggerTime)
 			headTimer.endAt = headTimer.startAt.Add(duration)
 			triggerCount = 0
 		}
