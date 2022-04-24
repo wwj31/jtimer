@@ -40,6 +40,7 @@ func TestTimer(t *testing.T) {
 		startAt := time.Now()
 		delayTime := time.Duration(rand.Int63n(10000)) * time.Millisecond
 		timerMgr.Add(
+			time.Now(),
 			startAt.Add(delayTime),
 			func(dt time.Duration) {
 				duration := time.Now().Sub(startAt)
