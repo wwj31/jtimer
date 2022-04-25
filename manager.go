@@ -2,10 +2,13 @@ package jtimer
 
 import (
 	"container/heap"
+	"sync"
 	"time"
 
 	"github.com/rs/xid"
 )
+
+var timerPool = sync.Pool{New: func() interface{} { return new(timer) }}
 
 type CallbackFn func(dt time.Duration)
 
@@ -45,13 +48,12 @@ func (m *Manager) Add(now, endAt time.Time, callback CallbackFn, execCount int, 
 		return oldTimer.id
 	}
 
-	newTimer := &timer{
-		id:        timerId,
-		startAt:   now,
-		endAt:     endAt,
-		callback:  callback,
-		execCount: execCount,
-	}
+	newTimer := timerPool.Get().(*timer)
+	newTimer.id = timerId
+	newTimer.startAt = now
+	newTimer.endAt = endAt
+	newTimer.callback = callback
+	newTimer.execCount = execCount
 
 	heap.Push(&m.heap, newTimer)
 	m.timers[timerId] = newTimer
@@ -131,4 +133,6 @@ func (m *Manager) remove(id Id, softRemove bool) {
 
 	heap.Remove(&m.heap, _timer.index)
 	delete(m.timers, id)
+
+	timerPool.Put(_timer)
 }
