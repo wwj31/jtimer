@@ -93,19 +93,19 @@ func (m *Manager) Update(now time.Time) {
 			continue
 		}
 
-		duration := headTimer.endAt.Sub(headTimer.startAt)
-		offset := now.Sub(headTimer.startAt)
-		triggerCount := offset / duration
+		timerDuration := headTimer.endAt.Sub(headTimer.startAt)
+		totalElapsed := now.Sub(headTimer.startAt)
 
-		if triggerCount > 0 && headTimer.spareCount() {
-			triggerTime := triggerCount * duration
+		if headTimer.spareCount() {
+			count := totalElapsed / timerDuration
+			elapsedDuration := count * timerDuration
 			if headTimer.callback != nil {
-				headTimer.callback(triggerTime)
+				headTimer.callback(elapsedDuration)
 			}
-			headTimer.consumeCount(int(triggerCount))
-			headTimer.startAt = headTimer.startAt.Add(triggerTime)
-			headTimer.endAt = headTimer.startAt.Add(duration)
-			triggerCount = 0
+
+			headTimer.consumeCount(int(count))
+			headTimer.startAt = headTimer.startAt.Add(elapsedDuration)
+			headTimer.endAt = headTimer.startAt.Add(timerDuration)
 		}
 
 		if !headTimer.spareCount() {
