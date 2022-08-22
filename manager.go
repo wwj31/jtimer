@@ -82,16 +82,14 @@ func (m *Manager) NextUpdateAt() (at time.Time) {
 }
 
 func (m *Manager) Update(now time.Time) {
-	headTimer := m.heap.peek()
-
-	for headTimer != nil {
+	for m.heap.peek() != nil {
+		headTimer := *m.heap.peek()
 		if now.Before(headTimer.endAt) {
 			return
 		}
 
 		if headTimer.remove {
 			m.remove(headTimer.id, false)
-			headTimer = m.heap.peek()
 			continue
 		}
 
@@ -115,8 +113,6 @@ func (m *Manager) Update(now time.Time) {
 		} else {
 			heap.Fix(&m.heap, headTimer.index)
 		}
-
-		headTimer = m.heap.peek()
 	}
 }
 
