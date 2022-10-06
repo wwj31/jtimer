@@ -2,6 +2,7 @@ package jtimer
 
 import (
 	"container/heap"
+	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -60,6 +61,20 @@ func TestTimer(t *testing.T) {
 			time.Sleep(time.Millisecond * 100)
 		}
 	}()
+	go func() {
+		tick := time.NewTicker(time.Millisecond)
+		for range tick.C {
+			timerMgr.Update(time.Now())
+		}
+	}()
+	time.Sleep(time.Hour)
+}
+func TestDelete(t *testing.T) {
+	timerMgr := New()
+	timerMgr.Add(time.Now(), time.Now().Add(1*time.Second), func(dt time.Duration) {
+		fmt.Println("1 * second")
+	}, -1, "abc")
+
 	go func() {
 		tick := time.NewTicker(time.Millisecond)
 		for range tick.C {

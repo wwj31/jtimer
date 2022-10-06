@@ -83,7 +83,7 @@ func (m *Manager) NextUpdateAt() (at time.Time) {
 
 func (m *Manager) Update(now time.Time) {
 	for m.heap.peek() != nil {
-		headTimer := *m.heap.peek()
+		headTimer := m.heap.peek()
 		if now.Before(headTimer.endAt) {
 			return
 		}
@@ -99,19 +99,20 @@ func (m *Manager) Update(now time.Time) {
 		if headTimer.spareCount() {
 			count := totalElapsed / timerDuration
 			elapsedDuration := count * timerDuration
-			if headTimer.callback != nil {
-				headTimer.callback(elapsedDuration)
-			}
 
 			headTimer.consumeCount(int(count))
 			headTimer.startAt = headTimer.startAt.Add(elapsedDuration)
 			headTimer.endAt = headTimer.startAt.Add(timerDuration)
+
+			if headTimer.callback != nil {
+				headTimer.callback(elapsedDuration)
+			}
 		}
 
-		if !headTimer.spareCount() {
-			m.remove(headTimer.id, false)
-		} else {
+		if headTimer.spareCount() && !headTimer.remove && m.timers[headTimer.id] != nil {
 			heap.Fix(&m.heap, headTimer.index)
+		} else {
+			m.remove(headTimer.id, false)
 		}
 	}
 }
@@ -122,7 +123,7 @@ func (m *Manager) remove(id Id, softRemove bool) {
 		return
 	}
 
-	if softRemove {
+	if softRemove && _timer.spareCount() {
 		_timer.remove = true
 		return
 	}
